@@ -26,7 +26,7 @@ const TextToSpeech = ({ onAudioGenerated }) => {
   setStatusMessage("");  // 清空之前的状态信息
 
   try {
-    const response = await fetch(`http://localhost:8000/api/generate-audio?tts_text=${encodeURIComponent(ttsText)}`);
+    const response = await fetch(`http://119.255.238.247:8000/api/generate-audio?tts_text=${encodeURIComponent(ttsText)}`);
     const data = await response.json();
 
     // 始终生成音频 URL
@@ -55,7 +55,7 @@ const TextToSpeech = ({ onAudioGenerated }) => {
 };
 
   return (
-    <div className="bg-gray-100 border border-gray-300 p-4 rounded-lg shadow-md mt-8 mb-4">
+    <div >
       <h2 className="text-xl font-medium text-gray-700 p-2 rounded-lg block mb-4">根据文本生成语音</h2>
       <textarea
         value={text}

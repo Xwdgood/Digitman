@@ -31,7 +31,7 @@ const AudioUploader = ({ audioBlob, recordWavName }) => {
     formData.append("file", audioFile);
 
     try {
-      const response = await fetch("http://localhost:8000/api/upload-audio", {
+      const response = await fetch("http://10.204.10.11:8000/api/upload-audio", {
         method: "POST",
         body: formData,
       });

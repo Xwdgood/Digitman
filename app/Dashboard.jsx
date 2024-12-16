@@ -55,7 +55,7 @@ export default function GPUDashboard() {
   const [currentData, setCurrentData] = useState(null);
 
   useEffect(() => {
-    const eventSource = new EventSource("http://localhost:8000/api/gpu-usage"); // 连接到后端API
+    const eventSource = new EventSource("http://119.255.238.247:8000/api/gpu-usage"); // 连接到后端API
 
     // 监听SSE消息
     eventSource.onmessage = function (event) {

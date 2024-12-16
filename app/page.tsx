@@ -3,31 +3,20 @@
 import { Button } from "@/components/ui/button";
 import Image from 'next/image';
 import { useState } from "react";
-import AudioRecorder from './AudioRecorder';
-import AudioUploader from "./AudioUploader";
+import AudioRecorderAndUploader from './AudioRecorderAndUploader'; // 新的录音与上传组件
 import Dashboard from './Dashboard'; // 导入仪表盘组件
 import TextToSpeech from './TextToSpeech';
 import UploadAudioPictureFile from './UploadAudioPictureFile';
 import VideoChecker from './VideoChecker';
 
 export default function Home() {
-  const generateFileName = () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    return `recorded_audio_${year}${month}${day}_${hours}${minutes}${now.getMilliseconds()}.wav`;  // Add milliseconds for uniqueness
-  };
-
   const [audioUrl, setAudioUrl] = useState("");
   const [audioName, setAudioName] = useState("");
   const [imageName, setImageName] = useState("");
   const [loading, setLoading] = useState(false);
   const [videoUrl, setVideoUrl] = useState("");
   const [audioBlob, setAudioBlob] = useState(null);
-  const [recordWavName, setRecordWavName] = useState(generateFileName()); // Use dynamic file name
+  const [recordWavName, setRecordWavName] = useState('');  // 动态文件名
 
   const handleAudioGenerated = (url, fileName) => {
     setAudioUrl(url);
@@ -40,7 +29,7 @@ export default function Home() {
 
   const handleRecordingComplete = (blob, fileName) => {
     setAudioBlob(blob);
-    setAudioName(fileName); // 传递文件名给父组件
+    setAudioName(fileName);  // 传递文件名给父组件
   };
 
   const handleCallGradioApi = async () => {
@@ -117,14 +106,13 @@ export default function Home() {
           </span>
         </p>
 
-        <AudioRecorder 
-          recordWavName={recordWavName} 
-          onRecordingComplete={handleRecordingComplete} 
-          setRecordWavName={setRecordWavName} // Add the function to update file name
-        />
-        {audioBlob && <AudioUploader audioBlob={audioBlob} recordWavName={recordWavName} />}
+        {/* 用新的 AudioRecorderAndUploader 组件替换旧的录音和上传音频功能 */}
+        <div className="bg-gray-100 border border-gray-300 p-4 rounded-lg shadow-md mt-8 mb-4">
+        <AudioRecorderAndUploader onRecordingComplete={handleRecordingComplete} />
 
         <TextToSpeech onAudioGenerated={handleAudioGenerated} />
+        </div>
+
 
         {audioUrl && (
           <UploadAudioPictureFile
