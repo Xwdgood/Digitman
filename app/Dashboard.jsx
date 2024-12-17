@@ -51,72 +51,49 @@ const GaugeChart = ({ value, title, max = 100 }) => {
 };
 
 export default function GPUDashboard() {
-  const [historicalData, setHistoricalData] = useState([]); // 保留所有数据
-  const [currentData, setCurrentData] = useState(null);
+  const [gpuData, setGpuData] = useState(null); // 当前GPU数据
+  const [historicalData, setHistoricalData] = useState([]); // 历史数据
 
   useEffect(() => {
-    const eventSource = new EventSource("http://119.255.238.247:8000/api/gpu-usage"); // 连接到后端API
-
-    // 监听SSE消息
-    eventSource.onmessage = function (event) {
-      console.log("Received SSE message:", event.data); // 打印接收到的数据
-
+    // 定义获取GPU数据的函数
+    const fetchGPUStats = async () => {
       try {
-        // 去掉data: 前缀并解析数据
-        const jsonData = event.data.replace(/^data: /, ''); // 去掉 "data: " 部分
-        const data = JSON.parse(jsonData); // 解析数据
+        const response = await fetch("http://119.255.238.247:8000/api/gpu-stats");
+        const data = await response.json();
 
-        if (data.gpu_usage && data.gpu_usage.length > 0) {
-          const gpuData = data.gpu_usage[0];
-          const timestamp = Date.now(); // 获取当前时间戳
+        if (data.error) {
+          console.error("Error fetching GPU data:", data.error);
+        } else {
+          // 更新当前 GPU 数据
+          setGpuData(data);
 
-          // 更新当前数据
-          setCurrentData({
-            utilization: gpuData.utilization,
-            memory_used: gpuData.memory_used,
-            memory_total: gpuData.memory_total,
-            temperature: gpuData.temperature,
-            power_usage: gpuData.power_usage,
-            power_limit: gpuData.power_limit,
-            fan_speed: gpuData.fan_speed,
-            timestamp, // 将时间戳添加到当前数据中
-          });
-
-          // 更新历史数据，保留所有历史数据
+          // 更新历史数据
           setHistoricalData((prev) => {
-            const newHistory = [
-              ...prev,
-              { ...gpuData, timestamp } // 添加时间戳
-            ];
-            return newHistory; // 不限制数据点的数量
+            const newHistory = [...prev, { ...data, timestamp: Date.now() }];
+            return newHistory.slice(-50); // 保留最近50条数据
           });
         }
       } catch (error) {
-        console.error("Failed to parse SSE data:", error);
+        console.error("Failed to fetch GPU stats:", error);
       }
     };
 
-    // 错误处理
-    eventSource.onerror = function (error) {
-      console.error("SSE connection error:", error);
-      if (error.event) {
-        console.error("Error event details:", error.event);
-      }
-      eventSource.close();
-    };
+    // 每隔5秒钟请求一次GPU数据
+    const intervalId = setInterval(fetchGPUStats, 1000);
 
-    return () => {
-      eventSource.close(); // 组件卸载时关闭SSE连接
-    };
+    // 清理定时器
+    return () => clearInterval(intervalId);
   }, []);
 
-  if (!currentData) return <div>Loading...</div>;
+  // 如果数据还没有加载完成，则显示加载提示
+  if (!gpuData) return <div>Loading...</div>;
 
   return (
     <div className="w-full p-4 space-y-4">
       <h1 className="text-2xl font-bold mb-4">GPU 监控面板</h1>
 
       {/* 实时利用率和温度曲线图 */}
+    
       <div className="bg-white rounded-lg shadow p-4">
         <h2 className="text-lg font-semibold mb-2">GPU 利用率和温度趋势</h2>
         <div className="h-64">
@@ -132,41 +109,49 @@ export default function GPUDashboard() {
               <YAxis yAxisId="left" />
               <YAxis yAxisId="right" orientation="right" />
               <Tooltip
-                formatter={(value, name) => [
-                  `${value.toFixed(1)}${name === "temperature" ? "°C" : "%"}`,
-                  name === "temperature" ? "温度" : "GPU利用率",
-                ]}
+                formatter={(value, name) => {
+                  // 根据 `name` 值来显示正确的单位和描述
+                  if (name === "temperature") {
+                    return [`${value.toFixed(1)}°C`, "温度"];
+                  } else if (name === "utilization") {
+                    return [`${value.toFixed(1)}%`, "GPU利用率"];
+                  }
+                  return value;
+                }}
                 labelFormatter={(label) => new Date(label).toLocaleTimeString()}
               />
               <Legend />
+              {/* GPU利用率曲线，蓝色 */}
               <Line
                 yAxisId="left"
                 type="monotone"
                 dataKey="utilization"
                 stroke="#8884d8"
-                name="GPU利用率"
+                name="GPU利用率" // 正确的名字
               />
+              {/* 温度曲线，橙色 */}
               <Line
                 yAxisId="right"
                 type="monotone"
                 dataKey="temperature"
                 stroke="#ff7300"
-                name="温度"
+                name="温度" // 修正了名称，表示温度
               />
             </LineChart>
           </ResponsiveContainer>
         </div>
       </div>
 
+
       {/* 内存使用量条形图 */}
       <div className="bg-white rounded-lg shadow p-4">
         <h2 className="text-lg font-semibold mb-2">显存使用情况</h2>
         <div className="h-32">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={[currentData]}>
+            <BarChart data={[gpuData]}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
-              <YAxis domain={[0, currentData.memory_total]} />
+              <YAxis domain={[0, gpuData.memory_total]} />
               <Tooltip formatter={(value) => `${(value).toFixed(0)}MB`} />
               <Legend />
               <Bar dataKey="memory_used" fill="#82ca9d" name="已用显存" />
@@ -181,9 +166,9 @@ export default function GPUDashboard() {
           <h2 className="text-lg font-semibold mb-2">功率使用</h2>
           <div className="h-48">
             <GaugeChart
-              value={currentData.power_usage}
+              value={gpuData.power_usage}
               title="瓦特"
-              max={currentData.power_limit}
+              max={gpuData.power_limit}
             />
           </div>
         </div>
@@ -191,7 +176,7 @@ export default function GPUDashboard() {
         <div className="bg-white rounded-lg shadow p-4">
           <h2 className="text-lg font-semibold mb-2">风扇转速</h2>
           <div className="h-48">
-            <GaugeChart value={currentData.fan_speed} title="%" />
+            <GaugeChart value={gpuData.fan_speed} title="%" />
           </div>
         </div>
       </div>

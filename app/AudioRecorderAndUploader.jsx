@@ -50,6 +50,9 @@ const AudioRecorderAndUploader = ({ onRecordingComplete }) => {
           const file = new File([audioBlob], newFileName, { type: "audio/wav" });
           setAudioFile(file);
           onRecordingComplete(audioBlob, newFileName);
+
+          // 自动上传音频
+          uploadAudio(file, newFileName);
         };
 
         mediaRecorderRef.current.start();
@@ -59,7 +62,7 @@ const AudioRecorderAndUploader = ({ onRecordingComplete }) => {
       });
   };
 
-  // 停止录音
+  // 停止录音并自动上传
   const stopRecording = () => {
     if (mediaRecorderRef.current) {  // 确保 mediaRecorderRef 已初始化
       mediaRecorderRef.current.stop();  // 停止录音
@@ -67,27 +70,28 @@ const AudioRecorderAndUploader = ({ onRecordingComplete }) => {
     setIsRecording(false);
   };
 
-  const uploadAudio = async () => {
+  // 上传音频
+  const uploadAudio = async (audioFile, fileName) => {
     if (!audioFile) {
       setUploadStatus("没有选择音频文件！");
       return;
     }
-  
+
     setUploadStatus("上传中...");
-  
+
     const formData = new FormData();
     formData.append("file", audioFile);
-  
+
     try {
       const response = await fetch("http://119.255.238.247:8000/api/upload-audio", {
         method: "POST",
         body: formData,
       });
-  
+
       if (!response.ok) {
         throw new Error(`上传失败: ${response.statusText}`);
       }
-  
+
       const data = await response.json();
       if (data.success) {
         setUploadStatus("文件上传成功!");
@@ -101,7 +105,6 @@ const AudioRecorderAndUploader = ({ onRecordingComplete }) => {
       console.error("上传音频时出错:", error);
     }
   };
-  
 
   return (
     <div >
@@ -125,17 +128,9 @@ const AudioRecorderAndUploader = ({ onRecordingComplete }) => {
         </div>
       )}
 
-      {/* 上传音频按钮 */}
-      {audioFile && (
-        <div className="mt-4">
-          <p className="mb-2">当前选择的音频是：{audioFile.name}</p>
-          <Button onClick={uploadAudio}>上传音频</Button>
-
-          {/* 显示上传状态 */}
-          {uploadStatus && (
-            <p className="mt-4 text-green-500">{uploadStatus}</p>
-          )}
-        </div>
+      {/* 显示上传状态 */}
+      {uploadStatus && (
+        <p className="mt-4 text-green-500">{uploadStatus}</p>
       )}
     </div>
   );

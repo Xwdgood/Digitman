@@ -45,7 +45,7 @@ export default function Home() {
     params.append("image_name", imageName);
 
     try {
-      const response = await fetch(`http://localhost:8000/api/call-gradio-api?${params.toString()}`, {
+      const response = await fetch(`http://119.255.238.247:8000/api/call-gradio-api?${params.toString()}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -66,7 +66,8 @@ export default function Home() {
       setLoading(false);  // 请求完成后停止 loading
     }
   };
-
+  
+  
   return (
     <div className="App">
       <div className="mb-40 flex flex-col items-center pt-6 text-center md:flex-row md:items-start md:text-left lg:grow mt-20">
@@ -108,11 +109,9 @@ export default function Home() {
 
         {/* 用新的 AudioRecorderAndUploader 组件替换旧的录音和上传音频功能 */}
         <div className="bg-gray-100 border border-gray-300 p-4 rounded-lg shadow-md mt-8 mb-4">
-        <AudioRecorderAndUploader onRecordingComplete={handleRecordingComplete} />
-
-        <TextToSpeech onAudioGenerated={handleAudioGenerated} />
+          <AudioRecorderAndUploader onRecordingComplete={handleRecordingComplete} />
+          <TextToSpeech onAudioGenerated={handleAudioGenerated} />
         </div>
-
 
         {audioUrl && (
           <UploadAudioPictureFile

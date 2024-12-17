@@ -100,7 +100,7 @@ const UploadAudioPictureFile = ({ audioUrl, onImageNameGenerated }) => {
       formData.append("image_file", image); // 上传图片文件
 
       // 发送上传请求到原来的 API 路径
-      const response = await fetch("http://localhost:8000/api/upload-audio-and-image", {
+      const response = await fetch("http://119.255.238.247:8000/api/upload-audio-and-image", {
         method: "POST",
         body: formData,
       });

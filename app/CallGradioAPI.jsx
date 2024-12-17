@@ -17,7 +17,7 @@ const CallGradioApi = ({ audioName, imageName, onVideoSuccess }) => {
 
     try {
       const response = await fetch(
-        `http://localhost:8000/api/call-gradio-api?audio_name=${audioName}&image_name=${imageName}`,
+        `http://119.255.238.247:8000/api/call-gradio-api?audio_name=${audioName}&image_name=${imageName}`,
         {
           method: "POST",
           headers: {
