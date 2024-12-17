@@ -11,21 +11,29 @@ const CallGradioApi = ({ audioName, imageName, onVideoSuccess }) => {
       setMessage("音频和图片文件名必须提供！");
       return;
     }
-
+  
     setLoading(true);
     setMessage("正在调用 Gradio API...");
-
+  
+    // 创建一个超时的 Promise，5分钟 = 300000ms
+    const timeout = new Promise((_, reject) => setTimeout(() => reject("请求超时，未收到响应"), 300000));
+  
     try {
-      const response = await fetch(
-        `http://119.255.238.247:8000/api/call-gradio-api?audio_name=${audioName}&image_name=${imageName}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
+      // 使用 Promise.race 来确保在 5 分钟内响应或超时
+      const response = await Promise.race([
+        fetch(
+          `http://119.255.238.247:8000/api/call-gradio-api?audio_name=${audioName}&image_name=${imageName}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Cache-Control": "no-cache",  // 禁用缓存
+            },
+          }
+        ),
+        timeout, // 超时的 Promise
+      ]);
+  
       const data = await response.json();
       if (data.success) {
         setMessage("API 调用成功，视频生成中...");
@@ -39,6 +47,7 @@ const CallGradioApi = ({ audioName, imageName, onVideoSuccess }) => {
       setLoading(false); // 恢复按钮状态
     }
   };
+  
 
   return (
     <div className="bg-gray-100 border border-gray-300 p-4 rounded-lg shadow-md mt-8">
