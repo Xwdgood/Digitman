@@ -50,7 +50,7 @@ const CallGradioApi = ({ audioName, imageName, onVideoSuccess }) => {
   
 
   return (
-    <div className="bg-gray-100 border border-gray-300 p-4 rounded-lg shadow-md mt-8">
+    <div >
       <Button onClick={handleCallApi} className="mt-4 " disabled={loading}>
         {loading ? "正在生成..." : "调用 Gradio API"}
       </Button>

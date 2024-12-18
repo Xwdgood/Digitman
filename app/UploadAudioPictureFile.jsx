@@ -31,31 +31,37 @@ const UploadAudioPictureFile = ({ audioUrl, onImageNameGenerated }) => {
   }, [audioUrl, onImageNameGenerated]);
 
   // 启动摄像头并显示视频流
-  const startCamera = async () => {
-    try {
-      // 请求摄像头权限
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-      });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
-      setCameraStream(stream);  // 保存摄像头流
-      setIsCameraActive(true);  // 激活拍照上传按钮
-    } catch (error) {
-      console.error("访问摄像头失败", error);
-      setMessage("无法访问摄像头，请检查设备权限。");
-    }
-  };
+const startCamera = async () => {
+  try {
 
-  // 停止摄像头
-  const stopCamera = () => {
-    if (cameraStream) {
-      const tracks = cameraStream.getTracks();
-      tracks.forEach((track) => track.stop());  // 停止所有轨道
+    // 每次启动摄像头时清空拍摄的图片
+    setImage(null);
+    // 请求摄像头权限
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+    });
+
+    if (videoRef.current) {
+      videoRef.current.srcObject = stream;
     }
-    setIsCameraActive(false);  // 停止拍照上传按钮
-  };
+
+    setCameraStream(stream);  // 保存摄像头流
+    setIsCameraActive(true);  // 激活拍照上传按钮
+  } catch (error) {
+    console.error("访问摄像头失败", error);
+    setMessage("无法访问摄像头，请检查设备权限。");
+  }
+};
+
+// 停止摄像头
+const stopCamera = () => {
+  if (cameraStream) {
+    const tracks = cameraStream.getTracks();
+    tracks.forEach((track) => track.stop());  // 停止所有轨道
+  }
+  setIsCameraActive(false);  // 停止拍照上传按钮
+};
+
 
   // 拍照功能
   const takePhoto = () => {
@@ -120,8 +126,8 @@ const UploadAudioPictureFile = ({ audioUrl, onImageNameGenerated }) => {
   };
 
   return (
-    <div className="bg-gray-100 border border-gray-300 p-4 rounded-lg shadow-md mt-8 mb-4">
-      <h2 className="text-xl font-medium text-gray-700 p-2 rounded-lg block mb-4" >上传图片</h2>
+    <div >
+      <h2 className="text-3xl font-medium text-gray-700 p-2 rounded-lg block mb-4 ">上传图片</h2>
 
       {/* 显示音频文件 */}
       <div>
@@ -139,45 +145,56 @@ const UploadAudioPictureFile = ({ audioUrl, onImageNameGenerated }) => {
 
       {/* 本地图片上传部分 */}
       <div>
-        <label htmlFor="imageUploadLocal" className="text-xl font-medium text-gray-700 p-2 rounded-lg block mb-4" >请选择本地图片或拍照上传:</label>
-        <p className="text-xl font-medium text-gray-700 p-2 rounded-lg block mb-4"> 参考样式与手势</p>
-        <img src="/0003.png" alt="示例图片" className="w-1/2 h-auto" />
+        <label htmlFor="imageUploadLocal" className="text-xl font-medium text-gray-700 p-2 rounded-lg block mb-4" >请根据参考样式与手势选择本地图片或拍照上传:</label>
+        <img src="/0003.png" alt="示例图片" className="ml-[80px] w-[250px] h-auto" />
         <Input
           id="imageUploadLocal"
           type="file"
           accept="image/*"
           onChange={handleImageChange}
-          className="block w-full border border-gray-300 p-2 rounded-md mt-4"
+          className="block w-[400px] h-[40px] border border-black p-2 rounded-md text-[30px] mt-4"  // 增大字体和边框深色
         />
-        {image && <p className="text-xl font-medium text-gray-700 p-2 rounded-lg block mb-4" >已选择图片: {imageName}</p>} {/* 显示图片名称 */}
+
+        {/* {image && <p className="text-xl font-medium text-gray-700 p-2 rounded-lg block mb-4" >已选择图片: {imageName}</p>} 显示图片名称 */}
       </div>
 
       {/* 摄像头显示 */}
       <div>
-        <video ref={videoRef} width="300" height="200" autoPlay></video>
-        <Button className="mr-4" onClick={startCamera}>启动摄像头</Button>
+        
+        <Button className="mr-4 mt-4 mb-4 ml-[80px]" onClick={startCamera}>启动摄像头</Button>
         {/* 只有在摄像头启动后才显示拍照上传按钮 */}
         {isCameraActive && (
-          <Button onClick={takePhoto}>拍照上传</Button>
+          <Button className="mb-4"onClick={takePhoto}>拍照</Button>
+          
         )}
-        <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
+        {/* 摄像头显示部分 */}
+        <video
+          ref={videoRef}
+          width="300"
+          height="200"
+          autoPlay
+          style={{ display: isCameraActive ? 'block' : 'none' }} // 控制视频显示
+          className="ml-[80px]"
+        ></video>
+        <canvas ref={canvasRef} style={{ display: "none" }}></canvas> 
+        
       </div>
 
       {/* 显示拍照后的图片 */}
       {image && (
         <div>
-          <h3 className="text-xl font-medium text-gray-700 p-2 rounded-lg block mb-4" >拍摄到的图片：</h3>
-          <img src={URL.createObjectURL(image)} alt="Captured" width="200" />
+          <h3 className="text-xl font-medium text-gray-700 p-2 rounded-lg block mb-4" >图片已选择：</h3>
+          <img className="ml-[80px]" src={URL.createObjectURL(image)} alt="Captured" width="300" />
         </div>
       )}
 
       {/* 上传按钮 */}
-      <Button onClick={handleUpload} className="mt-4" disabled={loading}>
-        {loading ? "上传中..." : "上传"}
+      <Button onClick={handleUpload} className="mt-4 mb-2 ml-[80px]" disabled={loading}>
+        {loading ? "上传中..." : "上传图片"}
       </Button>
 
       {/* 显示状态信息 */}
-      {message && <p>{message}</p>}
+      {message && <p className="ml-[80px] text-green-500 mt-4">{message}</p>}
     </div>
   );
 };
