@@ -97,17 +97,19 @@ export default function Home() {
         </div>
       </div>
       <section className="text-gray-900">
-        <p id="section-1">
-          <span className="text-xl font-medium text-gray-700 p-2 rounded-lg block mb-4">
-            请按下录音按钮并念出下面的文本：
-          </span>
-          <span className="text-2xl font-bold text-blue-600 bg-yellow-300 p-2 rounded-lg shadow-md">
-            我正在记录声音模版
-          </span>
-        </p>
+        
 
         {/* 用新的 AudioRecorderAndUploader 组件替换旧的录音和上传音频功能 */}
         <div className="bg-gray-100 border border-gray-300 p-4 rounded-lg shadow-md mt-8 mb-4">
+        <h1 id="section-1" className="text-3xl font-medium text-gray-700 p-2 rounded-lg block mb-4 ">音频克隆</h1>
+        <p >
+          <span className="text-xl font-medium text-gray-700 p-2 rounded-lg block mb-4">
+            请按下录音按钮并念出下面的文本：
+          </span>
+          <span className="text-2xl font-bold text-blue-600 bg-yellow-300 p-2 ml-[170px] rounded-lg shadow-md">
+            我正在记录声音模版
+          </span>
+        </p>
         <AudioRecorderAndUploader onRecordingComplete={handleRecordingComplete} />
 
         <TextToSpeech onAudioGenerated={handleAudioGenerated} />

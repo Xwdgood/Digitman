@@ -5,8 +5,6 @@ import { useEffect, useRef, useState } from "react";
 import '../styles/globals.css'; // 假设你将 Tailwind 样式放在 styles 文件夹中
 
 
-
-
 const UploadAudioPictureFile = ({ audioUrl, onImageNameGenerated }) => {
   const [image, setImage] = useState(null);  // 用于存储图片
   const [imageName, setImageName] = useState("");  // 用于存储图片文件名
@@ -15,6 +13,7 @@ const UploadAudioPictureFile = ({ audioUrl, onImageNameGenerated }) => {
   const videoRef = useRef(null);  // 用于显示摄像头视频流
   const canvasRef = useRef(null);  // 用于截图
   const [cameraStream, setCameraStream] = useState(null);  // 用于存储摄像头流
+  const [isCameraActive, setIsCameraActive] = useState(false);  // 控制拍照上传按钮的显示状态
 
   // 设置图片文件名，假设图片是 jpg 格式
   useEffect(() => {
@@ -42,6 +41,7 @@ const UploadAudioPictureFile = ({ audioUrl, onImageNameGenerated }) => {
         videoRef.current.srcObject = stream;
       }
       setCameraStream(stream);  // 保存摄像头流
+      setIsCameraActive(true);  // 激活拍照上传按钮
     } catch (error) {
       console.error("访问摄像头失败", error);
       setMessage("无法访问摄像头，请检查设备权限。");
@@ -54,6 +54,7 @@ const UploadAudioPictureFile = ({ audioUrl, onImageNameGenerated }) => {
       const tracks = cameraStream.getTracks();
       tracks.forEach((track) => track.stop());  // 停止所有轨道
     }
+    setIsCameraActive(false);  // 停止拍照上传按钮
   };
 
   // 拍照功能
@@ -126,8 +127,8 @@ const UploadAudioPictureFile = ({ audioUrl, onImageNameGenerated }) => {
       <div>
         {audioUrl && (
           <div>
-            <h3 className="text-xl font-medium text-gray-700 p-2 rounded-lg block mb-4" >音频准备好：</h3>
-            <p>{audioUrl}</p>
+            {/* <h3 className="text-xl font-medium text-gray-700 p-2 rounded-lg block mb-4" >音频准备好：</h3>
+            <p>{audioUrl}</p> */}
             {/* <audio controls>
               <source src={audioUrl} type="audio/wav" />
               您的浏览器不支持音频播放。
@@ -138,13 +139,15 @@ const UploadAudioPictureFile = ({ audioUrl, onImageNameGenerated }) => {
 
       {/* 本地图片上传部分 */}
       <div>
-        <label htmlFor="imageUploadLocal" className="text-xl font-medium text-gray-700 p-2 rounded-lg block mb-4" >选择本地图片:</label>
+        <label htmlFor="imageUploadLocal" className="text-xl font-medium text-gray-700 p-2 rounded-lg block mb-4" >请选择本地图片或拍照上传:</label>
+        <p className="text-xl font-medium text-gray-700 p-2 rounded-lg block mb-4"> 参考样式与手势</p>
+        <img src="/0003.png" alt="示例图片" className="w-1/2 h-auto" />
         <Input
           id="imageUploadLocal"
           type="file"
           accept="image/*"
           onChange={handleImageChange}
-          className="block w-full border border-gray-300 p-2 rounded-md"
+          className="block w-full border border-gray-300 p-2 rounded-md mt-4"
         />
         {image && <p className="text-xl font-medium text-gray-700 p-2 rounded-lg block mb-4" >已选择图片: {imageName}</p>} {/* 显示图片名称 */}
       </div>
@@ -153,7 +156,10 @@ const UploadAudioPictureFile = ({ audioUrl, onImageNameGenerated }) => {
       <div>
         <video ref={videoRef} width="300" height="200" autoPlay></video>
         <Button className="mr-4" onClick={startCamera}>启动摄像头</Button>
-        <Button onClick={takePhoto}>拍照上传</Button>
+        {/* 只有在摄像头启动后才显示拍照上传按钮 */}
+        {isCameraActive && (
+          <Button onClick={takePhoto}>拍照上传</Button>
+        )}
         <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
       </div>
 
