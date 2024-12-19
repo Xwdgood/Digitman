@@ -15,6 +15,95 @@ const DynamicChart = () => {
   const toggleVisibility = () => setIsVisible(!isVisible);
   const toggleMinimize = () => setIsMinimized(!isMinimized);
 
+  // 新增重新初始化图表函数
+  const initializeCharts = () => {
+    if (!temperatureChartRef.current || !utilizationChartRef.current) return;
+
+    // 销毁旧的图表实例
+    if (temperatureChart.current) temperatureChart.current.dispose();
+    if (utilizationChart.current) utilizationChart.current.dispose();
+
+    // 重新初始化ECharts实例
+    temperatureChart.current = echarts.init(temperatureChartRef.current);
+    utilizationChart.current = echarts.init(utilizationChartRef.current);
+
+    // 初始化温度图表
+    const temperatureOption = {
+      title: {
+        text: 'GPU工作温度监控'
+      },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+          type: 'cross',
+          label: {
+            backgroundColor: '#283b56'
+          }
+        }
+      },
+      xAxis: {
+        type: 'category',
+        boundaryGap: true,
+        data: categories
+      },
+      yAxis: {
+        type: 'value',
+        scale: true,
+        name: '实时温度 (°C)',
+        max: 70,
+        min: 60,
+        boundaryGap: [0.2, 0.2]
+      },
+      series: [
+        {
+          name: '工作温度',
+          type: 'line',
+          data: temperatureData,
+          color: '#FF6347'  // 设置线条颜色为番茄红
+        }
+      ]
+    };
+
+    // 初始化GPU利用率图表
+    const utilizationOption = {
+      title: {
+        text: 'GPU显存监控'
+      },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+          type: 'cross',
+          label: {
+            backgroundColor: '#283b56'
+          }
+        }
+      },
+      xAxis: {
+        type: 'category',
+        boundaryGap: true,
+        data: categories
+      },
+      yAxis: {
+        type: 'value',
+        scale: true,
+        name: 'GPU显存使用',
+        max: 24564,
+        min: 6000,
+        boundaryGap: [0.2, 0.2]
+      },
+      series: [
+        {
+          name: 'GPU利用率',
+          type: 'line',
+          data: utilizationData
+        }
+      ]
+    };
+
+    temperatureChart.current.setOption(temperatureOption);
+    utilizationChart.current.setOption(utilizationOption);
+  };
+
   useEffect(() => {
     // 如果小窗最小化了，不初始化echarts图表
     if (isMinimized || !temperatureChartRef.current || !utilizationChartRef.current) return;
@@ -67,7 +156,7 @@ const DynamicChart = () => {
     // 初始化GPU利用率图表
     const utilizationOption = {
       title: {
-        text: 'GPU利用率监控'
+        text: 'GPU显存监控'
       },
       tooltip: {
         trigger: 'axis',
@@ -86,9 +175,9 @@ const DynamicChart = () => {
       yAxis: {
         type: 'value',
         scale: true,
-        name: 'GPU利用率 (%)',
-        max: 5,
-        min: 0,
+        name: 'GPU显存使用',
+        max: 24564,
+        min: 6000,
         boundaryGap: [0.2, 0.2]
       },
       series: [
@@ -112,7 +201,7 @@ const DynamicChart = () => {
         if (data.error) {
           console.error("Error fetching GPU data:", data.error);
         } else {
-          const { temperature, utilization } = data;
+          const { temperature, memory_used } = data;
 
           // 更新 categories（时间轴）
           const newTime = new Date().toLocaleTimeString().replace(/^\D*/, '');
@@ -129,7 +218,7 @@ const DynamicChart = () => {
 
           // 更新GPU利用率数据
           setUtilizationData(prev => {
-            const newData = [...prev, utilization];
+            const newData = [...prev, memory_used];
             return newData.slice(-10); // 保持最近10个数据点
           });
         }
@@ -185,6 +274,12 @@ const DynamicChart = () => {
     });
   }, [temperatureData, utilizationData, categories]); // 当 temperatureData, utilizationData 或 categories 更新时更新图表
 
+  const handleMinimize = () => {
+    setIsMinimized(true);
+    // 在最小化后延迟一秒执行初始化图表逻辑
+    setTimeout(initializeCharts, 2000);
+  };
+
   return (
     <div>
       {/* 小窗悬浮框 */}
@@ -217,7 +312,7 @@ const DynamicChart = () => {
               >
                 {/* 最小化按钮 */}
                 <button
-                  onClick={toggleMinimize}
+                  onClick={handleMinimize}
                   style={{
                     marginRight: '10px',
                     padding: '1px 12px',

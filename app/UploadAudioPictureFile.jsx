@@ -150,10 +150,6 @@ const UploadAudioPictureFile = ({ audioUrl, onImageNameGenerated }) => {
         </div>
       )}
 
-      {/* <Button onClick={() => handleUpload(image)} className="mt-4 mb-2 ml-[280px]" disabled={loading}>
-        {loading ? "上传中..." : "上传图片"}
-      </Button> */}
-
       {message && <p className="ml-[180px] text-green-500 mt-4">{message}</p>}
     </div>
   );
