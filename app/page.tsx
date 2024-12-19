@@ -8,6 +8,7 @@ import Dashboard from './Dashboard'; // 导入仪表盘组件
 import TextToSpeech from './TextToSpeech';
 import UploadAudioPictureFile from './UploadAudioPictureFile';
 import VideoChecker from './VideoChecker';
+import DynamicChart from './DynamicChart'
 
 export default function Home() {
   const [audioUrl, setAudioUrl] = useState("");
@@ -115,23 +116,23 @@ export default function Home() {
         <TextToSpeech onAudioGenerated={handleAudioGenerated} />
         </div>
 
-        <div className="bg-gray-100 border border-gray-300 p-4 rounded-lg shadow-md mt-8 mb-4">
         {audioUrl && (
-          <UploadAudioPictureFile
-            audioUrl={audioUrl}
-            onImageNameGenerated={handleImageNameGenerated}
-          />
+          <div className="bg-gray-100 border border-gray-300 p-4 rounded-lg shadow-md mt-8 mb-4">
+            <UploadAudioPictureFile
+              audioUrl={audioUrl}
+              onImageNameGenerated={handleImageNameGenerated}
+            />
+            <Button className="ml-[80px] mt-4" onClick={handleCallGradioApi} disabled={loading}>
+              {loading ? "正在生成..." : "调用 Gradio API"}
+            </Button>
+            {videoUrl && (
+              <VideoChecker videoUrl={videoUrl} isLoading={loading} />
+            )}
+          </div>
         )}
 
-        <Button className="ml-[80px] mt-4" onClick={handleCallGradioApi} disabled={loading}>
-          {loading ? "正在生成..." : "调用 Gradio API"}
-        </Button>
-
-        {videoUrl && (
-          <VideoChecker videoUrl={videoUrl} isLoading={loading} />  
-        )}
-        </div>
         {/* 在页面底部添加仪表盘 */}
+        <DynamicChart />
         <Dashboard />
       </section>
     </div>

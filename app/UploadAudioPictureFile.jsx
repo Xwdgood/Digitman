@@ -126,11 +126,11 @@ const stopCamera = () => {
   };
 
   return (
-    <div >
+    <div>
       <h2 className="text-3xl font-medium text-gray-700 p-2 rounded-lg block mb-4 ">上传图片</h2>
 
       {/* 显示音频文件 */}
-      <div>
+      {/* <div>
         {audioUrl && (
           <div>
             {/* <h3 className="text-xl font-medium text-gray-700 p-2 rounded-lg block mb-4" >音频准备好：</h3>
@@ -138,10 +138,10 @@ const stopCamera = () => {
             {/* <audio controls>
               <source src={audioUrl} type="audio/wav" />
               您的浏览器不支持音频播放。
-            </audio> */}
+            </audio> 
           </div>
         )}
-      </div>
+      </div> */}
 
       {/* 本地图片上传部分 */}
       <div>

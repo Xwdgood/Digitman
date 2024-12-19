@@ -70,7 +70,7 @@ export default function GPUDashboard() {
           // 更新历史数据
           setHistoricalData((prev) => {
             const newHistory = [...prev, { ...data, timestamp: Date.now() }];
-            return newHistory.slice(-50); // 保留最近50条数据
+            return newHistory.slice(-30); // 保留最近50条数据
           });
         }
       } catch (error) {
@@ -94,7 +94,7 @@ export default function GPUDashboard() {
 
       {/* 实时利用率和温度曲线图 */}
     
-      <div className="bg-white rounded-lg shadow p-4">
+      {/* <div className="bg-white rounded-lg shadow p-4">
         <h2 className="text-lg font-semibold mb-2">GPU 利用率和温度趋势</h2>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
@@ -121,7 +121,7 @@ export default function GPUDashboard() {
                 labelFormatter={(label) => new Date(label).toLocaleTimeString()}
               />
               <Legend />
-              {/* GPU利用率曲线，蓝色 */}
+              {/* GPU利用率曲线，蓝色 
               <Line
                 yAxisId="left"
                 type="monotone"
@@ -129,7 +129,7 @@ export default function GPUDashboard() {
                 stroke="#8884d8"
                 name="GPU利用率" // 正确的名字
               />
-              {/* 温度曲线，橙色 */}
+              {/* 温度曲线，橙色 *
               <Line
                 yAxisId="right"
                 type="monotone"
@@ -140,7 +140,7 @@ export default function GPUDashboard() {
             </LineChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </div> */}
 
 
       {/* 内存使用量条形图 */}
