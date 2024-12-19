@@ -111,10 +111,10 @@ const AudioRecorderAndUploader = ({ onRecordingComplete }) => {
   return (
     <div>
       {/* 开始/停止录音按钮 */}
-      <Button onClick={startRecording} className="mr-4 mt-4 ml-[80px]" disabled={isRecording}>
+      <Button onClick={startRecording} className="mr-4 mt-4 ml-[180px]" disabled={isRecording}>
         {isRecording ? "录音中..." : "开始录音"}
       </Button>
-      <Button onClick={stopRecording} className="ml-[220px]" disabled={!isRecording}>
+      <Button onClick={stopRecording} className="ml-[180px]" disabled={!isRecording}>
         停止录音
       </Button>
 
@@ -123,14 +123,14 @@ const AudioRecorderAndUploader = ({ onRecordingComplete }) => {
       {/* 播放录音预览 */}
       {audioUrl && (
         <div>
-          <h3 className="text-xl font-medium text-gray-700 p-2 rounded-lg block mb-4 ">播放录音：</h3>
-          <audio className="ml-[80px]" controls src={audioUrl}></audio>
+          <h3 className="text-xl font-medium text-gray-700 p-2 ml-[100px] rounded-lg block mb-4 ">播放录音：</h3>
+          <audio className="ml-[200px]" controls src={audioUrl}></audio>
         </div>
       )}
 
       {/* 显示上传状态 */}
       {uploadStatus && (
-        <p className="mt-4 ml-[80px] text-green-500">{uploadStatus}</p>
+        <p className="mt-4 ml-[180px] text-green-500">{uploadStatus}</p>
       )}
     </div>
   );

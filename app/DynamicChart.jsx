@@ -2,44 +2,35 @@ import React, { useState, useEffect, useRef } from 'react';
 import * as echarts from 'echarts';
 
 const DynamicChart = () => {
-  const categories = (function () {
-    let now = new Date();
-    let res = [];
-    let len = 10;
-    while (len--) {
-      res.unshift(now.toLocaleTimeString().replace(/^\D*/, ''));
-      now = new Date(+now - 2000);
-    }
-    return res;
-  })();
-
-  const categories2 = (function () {
-    let res = [];
-    let len = 10;
-    while (len--) {
-      res.push(10 - len - 1);
-    }
-    return res;
-  })();
-
   const [temperatureData, setTemperatureData] = useState([]); // 存储温度数据
   const [utilizationData, setUtilizationData] = useState([]); // 存储GPU利用率数据
+  const [categories, setCategories] = useState([]); // 存储时间轴数据
   const [isVisible, setIsVisible] = useState(true); // 控制窗口是否可见
   const [isMinimized, setIsMinimized] = useState(false); // 控制窗口是否最小化
-  const chartRef = useRef(null); // 使用 useRef 来获取 chart-container
+  const temperatureChartRef = useRef(null); // 温度图表容器
+  const utilizationChartRef = useRef(null); // GPU利用率图表容器
+  const temperatureChart = useRef(null); // 存储温度图表实例
+  const utilizationChart = useRef(null); // 存储GPU利用率图表实例
 
   const toggleVisibility = () => setIsVisible(!isVisible);
   const toggleMinimize = () => setIsMinimized(!isMinimized);
 
   useEffect(() => {
     // 如果小窗最小化了，不初始化echarts图表
-    if (isMinimized || !chartRef.current) return;
+    if (isMinimized || !temperatureChartRef.current || !utilizationChartRef.current) return;
 
-    const myChart = echarts.init(chartRef.current);
+    // 只在组件第一次加载时初始化ECharts实例
+    if (!temperatureChart.current) {
+      temperatureChart.current = echarts.init(temperatureChartRef.current);
+    }
+    if (!utilizationChart.current) {
+      utilizationChart.current = echarts.init(utilizationChartRef.current);
+    }
 
-    const option = {
+    // 初始化温度图表
+    const temperatureOption = {
       title: {
-        text: 'GPU状态监控'
+        text: 'GPU工作温度监控'
       },
       tooltip: {
         trigger: 'axis',
@@ -50,56 +41,57 @@ const DynamicChart = () => {
           }
         }
       },
-      legend: {},
-      toolbox: {
-        show: true,
-        feature: {
-          dataView: { readOnly: false },
-          restore: {},
-          saveAsImage: {}
-        }
+      xAxis: {
+        type: 'category',
+        boundaryGap: true,
+        data: categories
       },
-      dataZoom: {
-        show: false,
-        start: 0,
-        end: 100
+      yAxis: {
+        type: 'value',
+        scale: true,
+        name: '实时温度 (°C)',
+        max: 70,
+        min: 60,
+        boundaryGap: [0.2, 0.2]
       },
-      xAxis: [
-        {
-          type: 'category',
-          boundaryGap: true,
-          data: categories
-        },
-        {
-          type: 'category',
-          boundaryGap: true,
-          data: categories2
-        }
-      ],
-      yAxis: [
-        {
-          type: 'value',
-          scale: true,
-          name: '实时温度 (°C)',
-          max: 100,
-          min: 0,
-          boundaryGap: [0.2, 0.2]
-        },
-        {
-          type: 'value',
-          scale: true,
-          name: 'GPU利用率 (%)',
-          max: 100,
-          min: 0,
-          boundaryGap: [0.2, 0.2]
-        }
-      ],
       series: [
         {
           name: '工作温度',
           type: 'line',
-          data: temperatureData
-        },
+          data: temperatureData,
+          color: '#FF6347'  // 设置线条颜色为番茄红
+        }
+      ]
+    };
+
+    // 初始化GPU利用率图表
+    const utilizationOption = {
+      title: {
+        text: 'GPU利用率监控'
+      },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+          type: 'cross',
+          label: {
+            backgroundColor: '#283b56'
+          }
+        }
+      },
+      xAxis: {
+        type: 'category',
+        boundaryGap: true,
+        data: categories
+      },
+      yAxis: {
+        type: 'value',
+        scale: true,
+        name: 'GPU利用率 (%)',
+        max: 5,
+        min: 0,
+        boundaryGap: [0.2, 0.2]
+      },
+      series: [
         {
           name: 'GPU利用率',
           type: 'line',
@@ -108,8 +100,8 @@ const DynamicChart = () => {
       ]
     };
 
-    // Set the initial option
-    myChart.setOption(option);
+    temperatureChart.current.setOption(temperatureOption);
+    utilizationChart.current.setOption(utilizationOption);
 
     // 定义获取GPU数据的函数
     const fetchGPUStatsData = async () => {
@@ -122,12 +114,20 @@ const DynamicChart = () => {
         } else {
           const { temperature, utilization } = data;
 
-          // 只更新温度和利用率数据，不调用 setOption
+          // 更新 categories（时间轴）
+          const newTime = new Date().toLocaleTimeString().replace(/^\D*/, '');
+          setCategories(prevCategories => {
+            const newCategories = [...prevCategories, newTime];
+            return newCategories.slice(-10); // 保持最近10个时间点
+          });
+
+          // 更新温度数据
           setTemperatureData(prev => {
             const newData = [...prev, temperature];
             return newData.slice(-10); // 保持最近10个数据点
           });
 
+          // 更新GPU利用率数据
           setUtilizationData(prev => {
             const newData = [...prev, utilization];
             return newData.slice(-10); // 保持最近10个数据点
@@ -144,30 +144,46 @@ const DynamicChart = () => {
     // Clean up interval on component unmount
     return () => {
       clearInterval(intervalId);
-      myChart.dispose(); // 销毁 ECharts 实例，防止内存泄漏
+      // 销毁 ECharts 实例，防止内存泄漏
+      temperatureChart.current.dispose();
+      utilizationChart.current.dispose();
     };
-  }, [isMinimized]); // 只监听 isMinimized，避免多次重新渲染
+  }, [isMinimized]); // 只在第一次加载时初始化 ECharts 实例
 
   // 更新图表数据
   useEffect(() => {
-    if (isMinimized || !chartRef.current) return;
+    if (isMinimized || !temperatureChart.current || !utilizationChart.current) return;
 
-    const myChart = echarts.init(chartRef.current);
-    
     // 只更新数据，不重绘整个图表
-    if (temperatureData.length && utilizationData.length) {
-      myChart.setOption({
-        xAxis: [
-          { data: categories },
-          { data: categories2 },
-        ],
+    if (temperatureData.length) {
+      temperatureChart.current.setOption({
         series: [
-          { data: temperatureData },
-          { data: utilizationData },
+          { data: temperatureData }
         ]
       });
     }
-  }, [temperatureData, utilizationData]); // 当 temperatureData 和 utilizationData 更新时更新图表
+
+    if (utilizationData.length) {
+      utilizationChart.current.setOption({
+        series: [
+          { data: utilizationData }
+        ]
+      });
+    }
+
+    // 更新时间轴
+    temperatureChart.current.setOption({
+      xAxis: {
+        data: categories
+      }
+    });
+
+    utilizationChart.current.setOption({
+      xAxis: {
+        data: categories
+      }
+    });
+  }, [temperatureData, utilizationData, categories]); // 当 temperatureData, utilizationData 或 categories 更新时更新图表
 
   return (
     <div>
@@ -179,12 +195,14 @@ const DynamicChart = () => {
             bottom: isMinimized ? '20px' : '20px',
             right: '20px',
             width: isMinimized ? '50px' : '500px',
-            height: isMinimized ? '50px' : '400px',
+            height: isMinimized ? '50px' : '600px',  // 增加高度来容纳两个图表
             backgroundColor: 'white',
             border: '1px solid #ccc',
             boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
             borderRadius: '8px',
             zIndex: 1000,
+            display: 'flex',
+            flexDirection: 'column',
           }}
         >
           {!isMinimized ? (
@@ -213,7 +231,6 @@ const DynamicChart = () => {
                   onMouseEnter={(e) => (e.target.style.backgroundColor = '#e0e0e0')}
                   onMouseLeave={(e) => (e.target.style.backgroundColor = '#f0f0f0')}
                 >
-                  {/* 使用“减号”符号作为最小化按钮 */}
                   -
                 </button>
 
@@ -233,13 +250,15 @@ const DynamicChart = () => {
                   onMouseEnter={(e) => (e.target.style.backgroundColor = '#e60000')}
                   onMouseLeave={(e) => (e.target.style.backgroundColor = '#ff4d4f')}
                 >
-                  {/* 使用“x”符号作为关闭按钮 */}
                   x
                 </button>
               </div>
 
-              {/* 图表容器 */}
-              <div ref={chartRef} style={{ width: '100%', height: '95%' }}></div>
+              {/* 温度图表 */}
+              <div ref={temperatureChartRef} style={{ width: '100%', height: '45%' }}></div>
+
+              {/* GPU利用率图表 */}
+              <div ref={utilizationChartRef} style={{ width: '100%', height: '45%' }}></div>
             </>
           ) : (
             // 最小化后的小图标按钮

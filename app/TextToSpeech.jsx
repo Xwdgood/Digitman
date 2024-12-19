@@ -58,27 +58,27 @@ const TextToSpeech = ({ onAudioGenerated }) => {
 
   return (
     <div>
-      <h2 className="text-xl font-medium text-gray-700 p-2 rounded-lg block mb-2">编辑文本来生成语音:</h2>
+      <h2 className="text-xl font-medium text-gray-700 p-2 ml-[100px] rounded-lg block mb-2">编辑文本来生成语音:</h2>
       <textarea
         value={text}
         onChange={handleTextChange}
         rows="4"
         cols="47"
         placeholder="祝各位领导，新年快乐，万事大吉！"
-        className="ml-[80px]"
+        className="ml-[140px]"
       />
       <br />
-      <Button onClick={handleSubmit} className="ml-[80px] mt-2" disabled={loading}>
+      <Button onClick={handleSubmit} className="ml-[300px] mt-2" disabled={loading}>
         {loading ? "生成中..." : "生成语音"}
       </Button>
 
-      {statusMessage && <p className="ml-[80px] text-green-500 mt-4">{statusMessage}</p>}  {/* 显示统一的状态信息 */}
+      {statusMessage && <p className="ml-[180px] text-green-500 mt-4">{statusMessage}</p>}  {/* 显示统一的状态信息 */}
 
       {audioUrl && (
         <div>
-          <h3 className="text-xl font-medium text-gray-700 p-2 rounded-lg block mb-4">生成的语音：</h3>
+          <h3 className="text-xl font-medium text-gray-700 ml-[100px] p-2 rounded-lg block mb-4">生成的语音：</h3>
           {/* 播放器 */}
-          <audio key={audioUrl} className="ml-[80px]" controls src={audioUrl}></audio>
+          <audio key={audioUrl} className="ml-[200px]" controls src={audioUrl}></audio>
         </div>
       )}
     </div>

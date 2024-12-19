@@ -1,21 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import PropTypes from "prop-types"; // 导入 PropTypes
+import PropTypes from "prop-types";
 import { useEffect, useRef, useState } from "react";
-import '../styles/globals.css'; // 假设你将 Tailwind 样式放在 styles 文件夹中
-
+import '../styles/globals.css'; 
 
 const UploadAudioPictureFile = ({ audioUrl, onImageNameGenerated }) => {
-  const [image, setImage] = useState(null);  // 用于存储图片
-  const [imageName, setImageName] = useState("");  // 用于存储图片文件名
-  const [loading, setLoading] = useState(false);  // 用于显示上传状态
-  const [message, setMessage] = useState("");  // 状态信息
-  const videoRef = useRef(null);  // 用于显示摄像头视频流
-  const canvasRef = useRef(null);  // 用于截图
-  const [cameraStream, setCameraStream] = useState(null);  // 用于存储摄像头流
-  const [isCameraActive, setIsCameraActive] = useState(false);  // 控制拍照上传按钮的显示状态
+  const [image, setImage] = useState(null);
+  const [imageName, setImageName] = useState(""); 
+  const [loading, setLoading] = useState(false); 
+  const [message, setMessage] = useState(""); 
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null); 
+  const [cameraStream, setCameraStream] = useState(null); 
+  const [isCameraActive, setIsCameraActive] = useState(false); 
 
-  // 设置图片文件名，假设图片是 jpg 格式
   useEffect(() => {
     if (audioUrl) {
       const audioFileName = audioUrl.split("/").pop();
@@ -23,47 +21,38 @@ const UploadAudioPictureFile = ({ audioUrl, onImageNameGenerated }) => {
       const generatedImageName = `${baseFileName}.jpg`;
       setImageName(generatedImageName);
 
-      // 调用父组件的回调函数，传递图片名称
       if (onImageNameGenerated) {
-        onImageNameGenerated(generatedImageName); // 传递图片名称
+        onImageNameGenerated(generatedImageName); 
       }
     }
   }, [audioUrl, onImageNameGenerated]);
 
-  // 启动摄像头并显示视频流
-const startCamera = async () => {
-  try {
+  const startCamera = async () => {
+    try {
+      setImage(null); 
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
 
-    // 每次启动摄像头时清空拍摄的图片
-    setImage(null);
-    // 请求摄像头权限
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: true,
-    });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
 
-    if (videoRef.current) {
-      videoRef.current.srcObject = stream;
+      setCameraStream(stream);  
+      setIsCameraActive(true);  
+    } catch (error) {
+      console.error("访问摄像头失败", error);
+      setMessage("无法访问摄像头，请检查设备权限。");
     }
+  };
 
-    setCameraStream(stream);  // 保存摄像头流
-    setIsCameraActive(true);  // 激活拍照上传按钮
-  } catch (error) {
-    console.error("访问摄像头失败", error);
-    setMessage("无法访问摄像头，请检查设备权限。");
-  }
-};
+  const stopCamera = () => {
+    if (cameraStream) {
+      const tracks = cameraStream.getTracks();
+      tracks.forEach((track) => track.stop());  
+    }
+    setIsCameraActive(false);  
+  };
 
-// 停止摄像头
-const stopCamera = () => {
-  if (cameraStream) {
-    const tracks = cameraStream.getTracks();
-    tracks.forEach((track) => track.stop());  // 停止所有轨道
-  }
-  setIsCameraActive(false);  // 停止拍照上传按钮
-};
-
-
-  // 拍照功能
+  // 修改1: 在拍照完成后自动上传图片
   const takePhoto = () => {
     const canvas = canvasRef.current;
     const video = videoRef.current;
@@ -74,25 +63,25 @@ const stopCamera = () => {
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       canvas.toBlob((blob) => {
         const renamedImage = new File([blob], imageName, { type: "image/jpeg" });
-        setImage(renamedImage);  // 更新为新的图片文件
-        stopCamera();  // 拍照后停止摄像头
+        setImage(renamedImage); 
+        stopCamera(); 
+        handleUpload(renamedImage); // 自动上传拍摄的图片
       });
     }
   };
 
-  // 选择本地图片
+  // 修改2: 在选择本地图片后自动上传图片
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // 使用基于音频文件名生成的图片名称
       const renamedImage = new File([file], imageName, { type: file.type });
-      setImage(renamedImage);  // 更新图片文件为新的文件名
+      setImage(renamedImage); 
+      handleUpload(renamedImage); // 自动上传本地图片
     }
   };
 
-  // 上传文件
-  const handleUpload = async () => {
-    if (!image) {
+  const handleUpload = async (file) => {
+    if (!file) {
       setMessage("请确保图片文件已选择！");
       return;
     }
@@ -101,21 +90,18 @@ const stopCamera = () => {
     setMessage("正在上传...");
 
     const formData = new FormData();
-
     try {
-      // 只上传图片，忽略音频部分
-      formData.append("image_file", image); // 上传图片文件
+      formData.append("image_file", file); // 只上传图片
 
-      // 发送上传请求到原来的 API 路径
       const response = await fetch("http://119.255.238.247:8000/api/upload-audio-and-image", {
         method: "POST",
         body: formData,
       });
 
       if (response.ok) {
-        setMessage("文件上传成功！");
+        setMessage("文件上传成功！"); 
       } else {
-        setMessage("文件上传失败，请稍后重试！");
+        setMessage("文件上传失败，请稍后重试！"); 
       }
     } catch (error) {
       console.error("上传失败：", error);
@@ -127,82 +113,55 @@ const stopCamera = () => {
 
   return (
     <div>
-      <h2 className="text-3xl font-medium text-gray-700 p-2 rounded-lg block mb-4 ">上传图片</h2>
+      <h2 className="text-3xl font-medium text-gray-700 p-2 rounded-lg block mb-4 ">数字人视频生成</h2>
 
-      {/* 显示音频文件 */}
-      {/* <div>
-        {audioUrl && (
-          <div>
-            {/* <h3 className="text-xl font-medium text-gray-700 p-2 rounded-lg block mb-4" >音频准备好：</h3>
-            <p>{audioUrl}</p> */}
-            {/* <audio controls>
-              <source src={audioUrl} type="audio/wav" />
-              您的浏览器不支持音频播放。
-            </audio> 
-          </div>
-        )}
-      </div> */}
-
-      {/* 本地图片上传部分 */}
       <div>
-        <label htmlFor="imageUploadLocal" className="text-xl font-medium text-gray-700 p-2 rounded-lg block mb-4" >请根据参考样式与手势选择本地图片或拍照上传:</label>
-        <img src="/0003.png" alt="示例图片" className="ml-[80px] w-[250px] h-auto" />
+        <label htmlFor="imageUploadLocal" className="text-xl font-medium text-gray-700 ml-[100px] p-2 rounded-lg block mb-4" >请根据参考样式与手势选择本地图片或拍照上传:</label>
+        <img src="/0003.png" alt="示例图片" className="ml-[200px] w-[250px] h-auto" />
         <Input
           id="imageUploadLocal"
           type="file"
           accept="image/*"
           onChange={handleImageChange}
-          className="block w-[400px] h-[40px] border border-black p-2 rounded-md text-[30px] mt-4"  // 增大字体和边框深色
+          className="block w-[400px] h-[40px] border border-black ml-[120px] p-2 rounded-md text-[30px] mt-4"
         />
-
-        {/* {image && <p className="text-xl font-medium text-gray-700 p-2 rounded-lg block mb-4" >已选择图片: {imageName}</p>} 显示图片名称 */}
       </div>
 
-      {/* 摄像头显示 */}
       <div>
-        
-        <Button className="mr-4 mt-4 mb-4 ml-[80px]" onClick={startCamera}>启动摄像头</Button>
-        {/* 只有在摄像头启动后才显示拍照上传按钮 */}
+        <Button className="mr-4 mt-4 mb-4 ml-[150px]" onClick={startCamera}>启动摄像头</Button>
         {isCameraActive && (
-          <Button className="mb-4"onClick={takePhoto}>拍照</Button>
-          
+          <Button className="ml-[160px] mb-4" onClick={takePhoto}>拍照</Button>
         )}
-        {/* 摄像头显示部分 */}
         <video
           ref={videoRef}
-          width="300"
+          width="280"
           height="200"
           autoPlay
-          style={{ display: isCameraActive ? 'block' : 'none' }} // 控制视频显示
-          className="ml-[80px]"
+          style={{ display: isCameraActive ? 'block' : 'none' }} 
+          className="ml-[180px]"
         ></video>
         <canvas ref={canvasRef} style={{ display: "none" }}></canvas> 
-        
       </div>
 
-      {/* 显示拍照后的图片 */}
       {image && (
         <div>
-          <h3 className="text-xl font-medium text-gray-700 p-2 rounded-lg block mb-4" >图片已选择：</h3>
-          <img className="ml-[80px]" src={URL.createObjectURL(image)} alt="Captured" width="300" />
+          <h3 className="text-xl font-medium ml-[100px] text-gray-700 p-2 rounded-lg block mb-4" >图片已选择：</h3>
+          <img className="ml-[180px]" src={URL.createObjectURL(image)} alt="Captured" width="280" />
         </div>
       )}
 
-      {/* 上传按钮 */}
-      <Button onClick={handleUpload} className="mt-4 mb-2 ml-[80px]" disabled={loading}>
+      {/* <Button onClick={() => handleUpload(image)} className="mt-4 mb-2 ml-[280px]" disabled={loading}>
         {loading ? "上传中..." : "上传图片"}
-      </Button>
+      </Button> */}
 
-      {/* 显示状态信息 */}
-      {message && <p className="ml-[80px] text-green-500 mt-4">{message}</p>}
+      {message && <p className="ml-[180px] text-green-500 mt-4">{message}</p>}
     </div>
   );
 };
 
-// 为 audioUrl 添加 PropTypes 校验
 UploadAudioPictureFile.propTypes = {
-  audioUrl: PropTypes.string.isRequired, // 校验 audioUrl 必须是字符串并且是必填的
-  onImageNameGenerated: PropTypes.func,  // 添加回调函数的 prop 校验
+  audioUrl: PropTypes.string.isRequired, 
+  onImageNameGenerated: PropTypes.func, 
 };
 
 export default UploadAudioPictureFile;

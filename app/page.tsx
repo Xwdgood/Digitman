@@ -104,10 +104,10 @@ export default function Home() {
         <div className="bg-gray-100 border border-gray-300 p-4 rounded-lg shadow-md mt-8 mb-4">
         <h1 id="section-1" className="text-3xl font-medium text-gray-700 p-2 rounded-lg block mb-4 ">音频克隆</h1>
         <p >
-          <span className="text-xl font-medium text-gray-700 p-2 rounded-lg block mb-4">
+          <span className="text-xl font-medium text-gray-700 ml-[100px] p-2 rounded-lg block mb-4">
             请按下录音按钮并念出下面的文本：
           </span>
-          <span className="text-2xl font-bold text-blue-600 bg-yellow-300 p-2 ml-[170px] rounded-lg shadow-md">
+          <span className="text-2xl font-bold text-blue-600 bg-yellow-300 p-2 ml-[250px] rounded-lg shadow-md">
             我正在记录声音模版
           </span>
         </p>
@@ -122,8 +122,8 @@ export default function Home() {
               audioUrl={audioUrl}
               onImageNameGenerated={handleImageNameGenerated}
             />
-            <Button className="ml-[80px] mt-4" onClick={handleCallGradioApi} disabled={loading}>
-              {loading ? "正在生成..." : "调用 Gradio API"}
+            <Button className="ml-[280px] mt-4" onClick={handleCallGradioApi} disabled={loading}>
+              {loading ? "正在生成..." : "生成视频"}
             </Button>
             {videoUrl && (
               <VideoChecker videoUrl={videoUrl} isLoading={loading} />
@@ -133,7 +133,7 @@ export default function Home() {
 
         {/* 在页面底部添加仪表盘 */}
         <DynamicChart />
-        <Dashboard />
+        {/* <Dashboard /> */}
       </section>
     </div>
   );

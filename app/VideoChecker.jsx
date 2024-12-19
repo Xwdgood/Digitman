@@ -15,7 +15,7 @@ const VideoChecker = ({ videoUrl, isLoading }) => {
   return (
     <div>
       {/* <h2 className="text-xl font-medium text-gray-700 p-2 rounded-lg block mb-4">视频生成状态</h2> */}
-      <p className="text-xl font-medium text-gray-700 p-2 rounded-lg block mb-4">{message}</p>
+      <p className="text-xl ml-[100px] font-medium text-gray-700 p-2 rounded-lg block mb-4">{message}</p>
 
       {/* 如果视频生成成功，则显示视频预览 */}
       {videoUrl && !isLoading && (
