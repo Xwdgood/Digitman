@@ -55,7 +55,7 @@ export default function Home() {
 
       if (response.ok) {
         console.log("Gradio API Request Sent");
-        const videoGeneratedUrl = `http://119.255.238.247:1107/generated_audio_${audioName.match(/(\d{8}_\d{4})/)[0]}_sig.mp4`;
+        const videoGeneratedUrl = `http://119.255.238.247:1107/generated_audio_${audioName.match(/(\d{8}_\d{4})/)[0]}_sig_cropped.mp4`;
         setVideoUrl(videoGeneratedUrl);
       } else {
         const errorData = await response.json();

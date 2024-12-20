@@ -28,7 +28,7 @@ const footerLinks = [
 const FooterLinks = () => {
   return (
     <div className="mx-auto flex flex-row items-center pb-2">
-      {footerLinks.map((link) => (
+      {/* {footerLinks.map((link) => (
         <Link
           key={link.name}
           href={link.href}
@@ -39,7 +39,7 @@ const FooterLinks = () => {
           {link.icon &&
             React.createElement(link.icon, { className: "text-lg" })}
         </Link>
-      ))}
+      ))} */}
     </div>
   );
 };
