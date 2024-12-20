@@ -13,8 +13,10 @@ const DynamicChart = () => {
   const utilizationChart = useRef(null); // 存储GPU利用率图表实例
 
   const toggleVisibility = () => setIsVisible(!isVisible);
-  const toggleMinimize = () => setIsMinimized(!isMinimized);
-
+  const toggleMinimize = () => {
+    setIsMinimized(false); // 取消最小化，恢复窗口
+    setTimeout(initializeCharts, 200); // 延迟 1 秒后重新初始化图表
+  };
   // 新增重新初始化图表函数
   const initializeCharts = () => {
     if (!temperatureChartRef.current || !utilizationChartRef.current) return;
@@ -51,7 +53,7 @@ const DynamicChart = () => {
         scale: true,
         name: '实时温度 (°C)',
         max: 70,
-        min: 60,
+        min: 20,
         boundaryGap: [0.2, 0.2]
       },
       series: [
@@ -88,12 +90,12 @@ const DynamicChart = () => {
         scale: true,
         name: 'GPU显存使用',
         max: 24564,
-        min: 6000,
+        min: 2000,
         boundaryGap: [0.2, 0.2]
       },
       series: [
         {
-          name: 'GPU利用率',
+          name: 'GPU显存使用',
           type: 'line',
           data: utilizationData
         }
@@ -140,7 +142,7 @@ const DynamicChart = () => {
         scale: true,
         name: '实时温度 (°C)',
         max: 70,
-        min: 60,
+        min: 20,
         boundaryGap: [0.2, 0.2]
       },
       series: [
@@ -177,12 +179,12 @@ const DynamicChart = () => {
         scale: true,
         name: 'GPU显存使用',
         max: 24564,
-        min: 6000,
+        min: 2000,
         boundaryGap: [0.2, 0.2]
       },
       series: [
         {
-          name: 'GPU利用率',
+          name: 'GPU显存使用',
           type: 'line',
           data: utilizationData
         }
@@ -277,7 +279,7 @@ const DynamicChart = () => {
   const handleMinimize = () => {
     setIsMinimized(true);
     // 在最小化后延迟一秒执行初始化图表逻辑
-    setTimeout(initializeCharts, 2000);
+    // setTimeout(initializeCharts, 1000);
   };
 
   return (
