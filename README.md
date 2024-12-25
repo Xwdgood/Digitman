@@ -55,18 +55,3 @@ Deploy the example using [Vercel](https://vercel.com?utm_source=github&utm_mediu
 
 **全栈工程师，Next.js 开源手艺人，AI降临派。**
 
-[My Blog](https://weijunext.com)  
-[Github](https://github.com/weijunext)  
-[Twitter/X](https://twitter.com/weijunext)  
-[Twitter/X - En](https://twitter.com/wayne_dev)  
-[Medium](https://medium.com/@weijunext)  
-[掘金](https://juejin.cn/user/26044008768029)  
-[知乎](https://www.zhihu.com/people/mo-mo-mo-89-12-11)  
-[微信交流群](https://weijunext.com/make-a-friend)  
-
-If this project is helpful to you, star the repo and buy be a coffee, thank you.
-
-<a href="https://www.buymeacoffee.com/weijunext" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;" ></a>
-
-
-<img src="./public/zs.jpeg" alt="赞赏作者" style="height: 200px; width: 200px">
